@@ -1,0 +1,18 @@
+compartment,mouse_region,row_label,human_cluster,agreement_count
+LHb,Hbx,LHb Hbx,LHb.2,1
+LHb,Hbx,LHb Hbx,LHb.6,2
+LHb,Lateral,LHb Lateral,LHb.7,3
+LHb,Marginal,LHb Marginal,LHb.3,1
+LHb,Marginal,LHb Marginal,LHb.6,2
+LHb,Oval/Medial,LHb Oval/Medial,LHb.1,1
+LHb,Oval/Medial,LHb Oval/Medial,LHb.4,2
+MHb,Dorsal,MHb Dorsal,MHb.2,2
+MHb,Dorsal,MHb Dorsal,MHb.3,1
+MHb,Lateral,MHb Lateral,MHb.1,2
+MHb,Lateral,MHb Lateral,MHb.3,1
+MHb,Superior/Dorsal,MHb Superior/Dorsal,MHb.1,1
+MHb,Superior/Dorsal,MHb Superior/Dorsal,MHb.2,2
+MHb,Ventral,MHb Ventral,MHb.1,1
+MHb,Ventral,MHb Ventral,MHb.2,1
+MHb,Ventral,MHb Ventral,MHb.3,1
+MHb,Ventral/Dorsal,MHb Ventral/Dorsal,MHb.1,3

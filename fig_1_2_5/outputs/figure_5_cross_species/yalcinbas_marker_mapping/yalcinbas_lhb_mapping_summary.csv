@@ -1,0 +1,9 @@
+,value
+lhb_cells,15505
+lhb_regions,Hbx=1148;Lateral=1020;Marginal=1873;Oval/Medial=11464
+best_analysis_a_matches,Hbx->LHb.2 FDR=1.93e-10 overlap=11;Lateral->LHb.7 FDR=1.51e-20 overlap=18;Marginal->LHb.3 FDR=0.00853 overlap=4;Oval/Medial->LHb.4 FDR=2.8e-17 overlap=16
+analysis_b_bootstrap_min_fdr,6.3115373924702e-05
+analysis_b_bootstrap_fdr_lt_0_1,4
+analysis_b_lhb_region_min_fdr,1.0
+analysis_b_lhb_region_fdr_lt_0_1,0
+strongest_human_module_by_region,Hbx->LHb.2 score=0.208;Lateral->LHb.7 score=0.272;Marginal->MHb.1 score=0.023;Oval/Medial->LHb.4 score=0.039

@@ -1,0 +1,12 @@
+# OS/editor
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+# Optional original full-size inputs are not part of this package
+adx_for_boostrap_may16.h5ad
+rc6/
+clean_h5ad/
+archive/
+*.log

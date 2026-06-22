@@ -1,0 +1,6 @@
+compartment,mouse_region,best_overlap_human_cluster,overlap_best_fraction,overlap_significant_fraction,overlap_min_fdr,overlap_max_genes,best_module_human_cluster,module_best_fraction,module_mean_score_across_depths,best_positive_rankcorr_human_cluster,positive_rankcorr_spearman_r,positive_rankcorr_fdr,n_ranked_genes
+MHb,Dorsal,MHb.2,1.0,1.0,1.324467731722619e-44,66,MHb.2,1.0,0.29717453718185427,LHb.1,0.21803471185987164,1.8210322363599877e-144,13545
+MHb,Lateral,LHb.2,0.625,1.0,9.18716716819907e-44,65,LHb.7,0.4,0.18736246824264527,LHb.1,0.18485498308567652,9.479667867927816e-104,13545
+MHb,Superior/Dorsal,MHb.2,0.625,0.875,7.496998959434727e-08,23,MHb.1,1.0,0.032784180343151094,MHb.2,0.1350528878347315,1.0930711596371607e-55,13545
+MHb,Ventral,LHb.1,0.75,0.75,3.427669592278526e-06,9,MHb.3,1.0,-0.028003283590078355,MHb.2,0.2525740790027798,9.414105249461153e-195,13545
+MHb,Ventral/Dorsal,MHb.1,0.5,0.375,2.33817862895744e-05,18,MHb.1,0.4,0.05391709581017494,MHb.1,0.3026498676459152,3.4454104759053677e-283,13545

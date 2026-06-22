@@ -1,0 +1,19 @@
+name: habenula-publication
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - anndata
+  - scanpy
+  - numpy
+  - pandas
+  - scipy
+  - statsmodels
+  - matplotlib
+  - seaborn
+  - h5py
+  - joblib
+  - openpyxl
+  - jupyterlab
+  - notebook

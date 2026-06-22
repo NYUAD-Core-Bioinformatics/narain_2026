@@ -1,0 +1,7 @@
+kim_region_enrichment_category,direction,n_mapped_deg_genes,percent_of_mapped_degs
+LHb-enriched,down_in_suicide,2,1.3513513513513513
+LHb-enriched,up_in_suicide,2,1.3513513513513513
+MHb-enriched,down_in_suicide,17,11.486486486486488
+MHb-enriched,up_in_suicide,8,5.405405405405405
+not_region_enriched,down_in_suicide,36,24.324324324324326
+not_region_enriched,up_in_suicide,83,56.08108108108109
