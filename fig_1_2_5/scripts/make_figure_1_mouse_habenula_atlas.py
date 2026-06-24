@@ -24,6 +24,8 @@ from scipy import sparse
 
 
 H5AD_PATH = Path("inputs/clean_objects/whole_habenula.h5ad")
+MHB_PANEL_C_LABELS = Path("inputs/figure_1_mouse_habenula_atlas/mhb_panel_c_region_labels.csv")
+LHB_PANEL_E_LABELS = Path("inputs/figure_1_mouse_habenula_atlas/lhb_panel_e_region_labels.csv")
 OUT_DIR = Path("outputs/figure_1_mouse_habenula_atlas")
 
 BROAD_ORDER = [
@@ -77,7 +79,7 @@ MHB_HEATMAP_MARKERS = ["Tac2", "Lmo3", "Slc18a3", "Sema3d", "Wif1", "Avil"]
 MHB_HEATMAP_ORDER = ["Dorsal", "Ventral 2/3", "Unknown", "Lateral", "Superior", "Ventral"]
 
 LHB_ASSIGNMENT_MARKERS = {
-    "HbX": ["Cartpt", "Chrnb3"],
+    "Hbx": ["Cartpt", "Chrnb3"],
     "Lateral": ["Plch1", "Peg10", "Pbx3"],
     "Marginal": ["Vgf"],
     "Oval/Medial": ["Chrm3"],
@@ -99,7 +101,7 @@ LHB_HEATMAP_MARKERS = [
     "Cartpt",
     "Chrnb3",
 ]
-LHB_HEATMAP_ORDER = ["HbX", "Lateral", "Marginal", "Oval/Medial"]
+LHB_HEATMAP_ORDER = ["Hbx", "Lateral", "Marginal", "Oval/Medial"]
 
 PALETTE = {
     "LHb": "#2a6fbb",
@@ -118,18 +120,33 @@ PALETTE = {
 MHB_PALETTE = {
     "Ventral": "#f46d43",
     "Ventral 2/3": "#2c7fb8",
+    "Ventral 2/3 inferior": "#7b3294",
     "Unknown": "#41ab5d",
     "Lateral": "#d95fbc",
     "Dorsal": "#8c564b",
     "Superior": "#e31a1c",
 }
 
+MHB_PANEL_C_ORDER = [
+    "Ventral",
+    "Lateral",
+    "Superior",
+    "Ventral 2/3",
+    "Dorsal",
+    "Ventral 2/3 inferior",
+    "Unknown",
+]
+
+MHB_PANEL_C_DISPLAY = {"Ventral 2/3 inferior": "Ventral 2/3"}
+
 LHB_PALETTE = {
-    "HbX": "#2c7fb8",
+    "Hbx": "#2c7fb8",
     "Lateral": "#f46d43",
     "Marginal": "#1f9e89",
     "Oval/Medial": "#e6c800",
 }
+
+LHB_PANEL_E_DISPLAY = {"Hbx": "HbX", "Oval/Medial": "Oval-medial"}
 
 
 def natural_key(value: object) -> list[object]:
@@ -210,8 +227,10 @@ def add_cluster_labels(
     min_cells: int = 20,
     fontsize: int = 12,
     offsets: dict[str, tuple[float, float]] | None = None,
+    display_labels: dict[str, str] | None = None,
 ) -> None:
     offsets = offsets or {}
+    display_labels = display_labels or {}
     for label, group in df.groupby(label_col, observed=True):
         if group.shape[0] < min_cells:
             continue
@@ -222,7 +241,7 @@ def add_cluster_labels(
         ax.text(
             xy[0],
             xy[1],
-            str(label),
+            display_labels.get(str(label), str(label)),
             fontsize=fontsize,
             fontweight="bold",
             ha="center",
@@ -241,6 +260,7 @@ def plot_umap(
     title: str = "",
     label_fontsize: int = 12,
     label_offsets: dict[str, tuple[float, float]] | None = None,
+    display_labels: dict[str, str] | None = None,
 ) -> None:
     for label in order:
         mask = df[label_col].astype(str).eq(label)
@@ -262,7 +282,14 @@ def plot_umap(
     ax.set_title(title, fontsize=12)
     for spine in ax.spines.values():
         spine.set_visible(False)
-    add_cluster_labels(ax, df, label_col, fontsize=label_fontsize, offsets=label_offsets)
+    add_cluster_labels(
+        ax,
+        df,
+        label_col,
+        fontsize=label_fontsize,
+        offsets=label_offsets,
+        display_labels=display_labels,
+    )
 
 
 def broad_dotplot_values(obs: pd.DataFrame, counts: sparse.csr_matrix, var_names: list[str]) -> pd.DataFrame:
@@ -339,6 +366,34 @@ def module_score_table(
     scores = pd.DataFrame(score_cols, index=obs_subset.index)
     mapped = pd.DataFrame(mapped_records)
     return scores, mapped
+
+
+def mapped_marker_table(marker_sets: dict[str, list[str]], var_names: list[str]) -> pd.DataFrame:
+    records = []
+    for label, genes in marker_sets.items():
+        mapped, _ = gene_positions(var_names, genes)
+        records.append({"label": label, "requested_genes": ";".join(genes), "mapped_genes": ";".join(mapped)})
+    return pd.DataFrame(records)
+
+
+def load_mhb_panel_c_labels(path: Path = MHB_PANEL_C_LABELS) -> pd.DataFrame:
+    labels = pd.read_csv(path)
+    required = {"cell_id", "UMAP1", "UMAP2", "figure1_mhb_cluster", "figure1_mhb_plot_group", "figure1_mhb_subregion"}
+    missing = required.difference(labels.columns)
+    if missing:
+        raise ValueError(f"{path} is missing required columns: {sorted(missing)}")
+    labels = labels.set_index("cell_id")
+    return labels
+
+
+def load_lhb_panel_e_labels(path: Path = LHB_PANEL_E_LABELS) -> pd.DataFrame:
+    labels = pd.read_csv(path)
+    required = {"cell_id", "UMAP1", "UMAP2", "figure1_lhb_subregion"}
+    missing = required.difference(labels.columns)
+    if missing:
+        raise ValueError(f"{path} is missing required columns: {sorted(missing)}")
+    labels = labels.set_index("cell_id")
+    return labels
 
 
 def assign_subregions(
@@ -440,24 +495,23 @@ def recreate_figure1(h5ad_path: Path = H5AD_PATH, out_dir: Path = OUT_DIR) -> di
     broad_dot = broad_dotplot_values(obs, counts, var_names)
     broad_dot.to_csv(out_dir / "panel_b_broad_dotplot_values.csv", index=False)
 
-    mhb_mask = obs["gs"].astype(str).eq("MHb").to_numpy()
-    lhb_mask = obs["gs"].astype(str).eq("LHb").to_numpy()
-
-    mhb_obs = obs.loc[mhb_mask].copy()
-    mhb_umap = umap.loc[mhb_obs.index].copy()
-    mhb_counts = counts[mhb_mask, :].tocsr()
-    mhb_obs, mhb_assignment, mhb_mapped = assign_subregions(
-        mhb_obs,
-        mhb_counts,
-        var_names,
-        MHB_ASSIGNMENT_MARKERS,
-        "figure1_mhb_subregion",
-        unknown_threshold=0.03,
-        unknown_margin=0.015,
+    mhb_panel = load_mhb_panel_c_labels()
+    mhb_names = mhb_panel.index.intersection(obs.index)
+    if mhb_names.empty:
+        raise ValueError("No MHb panel C cells overlap with the whole-habenula object")
+    mhb_panel = mhb_panel.loc[mhb_names].copy()
+    mhb_positions = obs.index.get_indexer(mhb_panel.index)
+    mhb_obs = obs.iloc[mhb_positions].copy()
+    mhb_obs["figure1_mhb_subregion"] = mhb_panel["figure1_mhb_subregion"].astype(str).to_numpy()
+    mhb_plot = mhb_panel[["figure1_mhb_plot_group", "figure1_mhb_subregion", "UMAP1", "UMAP2"]].copy()
+    mhb_counts_used = counts[mhb_positions, :].tocsr()
+    mhb_assignment = (
+        mhb_panel.reset_index()
+        .groupby(["figure1_mhb_cluster", "figure1_mhb_plot_group", "figure1_mhb_subregion"], observed=True)
+        .size()
+        .reset_index(name="n_cells")
     )
-    mhb_umap = mhb_umap.loc[mhb_obs.index].copy()
-    mhb_plot = pd.concat([mhb_obs[["figure1_mhb_subregion", "l04"]], mhb_umap], axis=1)
-    mhb_counts_used = counts[obs.index.isin(mhb_obs.index), :].tocsr()
+    mhb_mapped = mapped_marker_table(MHB_ASSIGNMENT_MARKERS, var_names)
     mhb_heat = expression_heatmap_values(
         mhb_obs,
         mhb_counts_used,
@@ -467,20 +521,23 @@ def recreate_figure1(h5ad_path: Path = H5AD_PATH, out_dir: Path = OUT_DIR) -> di
         [g for g in MHB_HEATMAP_ORDER if g in set(mhb_obs["figure1_mhb_subregion"])],
     )
 
-    lhb_obs = obs.loc[lhb_mask].copy()
-    lhb_umap = umap.loc[lhb_obs.index].copy()
-    lhb_counts = counts[lhb_mask, :].tocsr()
-    lhb_obs, lhb_assignment, lhb_mapped = assign_subregions(
-        lhb_obs,
-        lhb_counts,
-        var_names,
-        LHB_ASSIGNMENT_MARKERS,
-        "figure1_lhb_subregion",
-        unknown_threshold=None,
+    lhb_panel = load_lhb_panel_e_labels()
+    lhb_names = lhb_panel.index.intersection(obs.index)
+    if lhb_names.empty:
+        raise ValueError("No LHb panel E cells overlap with the whole-habenula object")
+    lhb_panel = lhb_panel.loc[lhb_names].copy()
+    lhb_positions = obs.index.get_indexer(lhb_panel.index)
+    lhb_obs = obs.iloc[lhb_positions].copy()
+    lhb_obs["figure1_lhb_subregion"] = lhb_panel["figure1_lhb_subregion"].astype(str).to_numpy()
+    lhb_plot = lhb_panel[["figure1_lhb_subregion", "UMAP1", "UMAP2"]].copy()
+    lhb_counts_used = counts[lhb_positions, :].tocsr()
+    lhb_assignment = (
+        lhb_panel.reset_index()
+        .groupby(["figure1_lhb_subregion"], observed=True)
+        .size()
+        .reset_index(name="n_cells")
     )
-    lhb_umap = lhb_umap.loc[lhb_obs.index].copy()
-    lhb_plot = pd.concat([lhb_obs[["figure1_lhb_subregion", "l04"]], lhb_umap], axis=1)
-    lhb_counts_used = counts[obs.index.isin(lhb_obs.index), :].tocsr()
+    lhb_mapped = mapped_marker_table(LHB_ASSIGNMENT_MARKERS, var_names)
     lhb_heat = expression_heatmap_values(
         lhb_obs,
         lhb_counts_used,
@@ -493,7 +550,7 @@ def recreate_figure1(h5ad_path: Path = H5AD_PATH, out_dir: Path = OUT_DIR) -> di
     mhb_assignment.to_csv(out_dir / "panel_c_mhb_l04_to_figure1_subregion.csv", index=False)
     lhb_assignment.to_csv(out_dir / "panel_e_lhb_l04_to_figure1_subregion.csv", index=False)
     pd.concat([mhb_mapped.assign(panel="C/D"), lhb_mapped.assign(panel="E/F")], ignore_index=True).to_csv(
-        out_dir / "figure1_marker_genes_mapped_to_h5ad.csv", index=False
+        out_dir / "figure_1_marker_genes_mapped_to_clean_object.csv", index=False
     )
     mhb_heat.to_csv(out_dir / "panel_d_mhb_marker_heatmap_values.csv")
     lhb_heat.to_csv(out_dir / "panel_f_lhb_marker_heatmap_values.csv")
@@ -520,23 +577,36 @@ def recreate_figure1(h5ad_path: Path = H5AD_PATH, out_dir: Path = OUT_DIR) -> di
     plot_panel_label(ax_b, "B")
 
     ax_c = fig.add_subplot(gs[1, 0])
-    mhb_order = [g for g in MHB_HEATMAP_ORDER if g in set(mhb_plot["figure1_mhb_subregion"])]
-    plot_umap(ax_c, mhb_plot, "figure1_mhb_subregion", mhb_order, MHB_PALETTE)
+    mhb_order = [g for g in MHB_PANEL_C_ORDER if g in set(mhb_plot["figure1_mhb_plot_group"])]
+    plot_umap(
+        ax_c,
+        mhb_plot,
+        "figure1_mhb_plot_group",
+        mhb_order,
+        MHB_PALETTE,
+        display_labels=MHB_PANEL_C_DISPLAY,
+    )
     plot_panel_label(ax_c, "C")
 
     ax_d = fig.add_subplot(gs[1, 1])
-    plot_heatmap(ax_d, mhb_heat, "MHb reconstructed subregion markers")
+    plot_heatmap(ax_d, mhb_heat, "")
     plot_panel_label(ax_d, "D")
 
     ax_e = fig.add_subplot(gs[2, 0])
-    plot_umap(ax_e, lhb_plot, "figure1_lhb_subregion", LHB_HEATMAP_ORDER, LHB_PALETTE)
+    plot_umap(
+        ax_e,
+        lhb_plot,
+        "figure1_lhb_subregion",
+        LHB_HEATMAP_ORDER,
+        LHB_PALETTE,
+        display_labels=LHB_PANEL_E_DISPLAY,
+    )
     plot_panel_label(ax_e, "E")
 
     ax_f = fig.add_subplot(gs[2, 1])
-    plot_heatmap(ax_f, lhb_heat, "LHb reconstructed subregion markers")
+    plot_heatmap(ax_f, lhb_heat, "")
     plot_panel_label(ax_f, "F")
 
-    fig.suptitle("Mouse habenula cell classes and reconstructed subregions", fontsize=18, y=0.995)
     png = out_dir / "figure_1_mouse_habenula_atlas.png"
     pdf = out_dir / "figure_1_mouse_habenula_atlas.pdf"
     fig.savefig(png, dpi=220, bbox_inches="tight")

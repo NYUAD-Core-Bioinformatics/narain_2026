@@ -1,8 +1,8 @@
-l04,figure1_mhb_subregion,best_marker_label,best_marker_score,second_marker_score,n_cells
-0,Unknown,Ventral,0.00847654603421688,0.0023957951925694942,20367
-1,Unknown,Superior,-0.0629146620631218,-0.06781996041536331,1537
-2,Unknown,Ventral 2/3,-0.020802605897188187,-0.043234191834926605,5309
-4,Ventral 2/3,Ventral 2/3,0.29628583788871765,0.13427849113941193,7268
-9,Ventral 2/3,Ventral 2/3,0.3300902247428894,0.048553045839071274,2557
-13,Lateral,Lateral,0.2745566666126251,0.21239881217479706,2030
-19,Lateral,Lateral,0.15702378749847412,0.04370300471782684,152
+figure1_mhb_cluster,figure1_mhb_plot_group,figure1_mhb_subregion,n_cells
+0,Ventral 2/3,Ventral 2/3,15855
+1,Ventral,Ventral,7731
+2,Unknown,Unknown,6875
+3,Superior,Superior,2802
+4,Ventral 2/3 inferior,Ventral 2/3,2247
+5,Dorsal,Dorsal,1778
+6,Lateral,Lateral,1562

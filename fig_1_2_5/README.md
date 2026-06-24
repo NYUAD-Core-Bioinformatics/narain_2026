@@ -5,6 +5,7 @@ This repository contains the cleaned inputs, analysis scripts, and figure output
 ## Layout
 
 - `inputs/clean_objects/`: cleaned mouse AnnData objects used by the figure scripts.
+- `inputs/figure_1_mouse_habenula_atlas/`: curated Figure 1 MHb panel C and LHb panel E region labels and UMAP coordinates.
 - `inputs/figure_2_mouse_differential_expression/`: mouse differential-expression tables used for phenotype and region DE summaries.
 - `inputs/figure_5_cross_species/`: Yalcinbas and Kim human reference inputs plus the human-mouse gene-symbol map.
 - `scripts/`: one script per figure-generation step.
